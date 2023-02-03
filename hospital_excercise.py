@@ -1,6 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
 
+# CONNECTING TO MYSQL
 def get_connection():
     connection = mysql.connector.connect(host='localhost',
                                          database='python_db',
@@ -8,14 +9,15 @@ def get_connection():
                                          password='kielo5401')
     return connection
 
-def close_connection(connection):
-    if connection:
-        connection.close()
+def close_connection(cursor,connection):
+    if connection.is_connected():
+            cursor.close()
+            connection.close()
+            print("MySQL connection is closed")    
+# ---------------------------------------
 
-def read_database_version():
-    db_Info = connection.get_server_info()
-    print("Connected to MySQL Server version ", db_Info)
 
+# Creating data
 def create_hospital_table(cursor):
     table_query = """CREATE TABLE Hospital (
                     Hospital_Id INT UNSIGNED NOT NULL, 
@@ -66,25 +68,91 @@ def insert_data_doctor(cursor):
     cursor.executemany(insert_query,toInsert)
     print(cursor.rowcount, "Multiple insert successful into table")
         
+def create_data():
+    try:
+        connection = get_connection()
+        if connection.is_connected():
+            cursor = connection.cursor()
+            
+            create_hospital_table(cursor)
+            create_doctor_table(cursor)
+            connection.commit()
+            close_connection(cursor,connection)
+            
+    except Error as e:
+        print("Error occured MySQL", e)
+# ---------------------------------------
 
+
+
+create_data()
+# Q1 
+def read_version():
+    try:
+        connection = get_connection()
+        if connection.is_connected():
+            cursor = connection.cursor()
+            db_Info = connection.get_server_info()
+            print("Connected to MySQL Server version ", db_Info)
+            connection.commit()
+            close_connection(cursor,connection)
+
+    except Error as e:
+        print("Error occured MySQL", e)
+        
 print("Question 1: Print Database version")
-try:
-    connection = get_connection()
-    if connection.is_connected():
-        read_database_version()
-        cursor = connection.cursor()
-        
-        create_hospital_table(cursor)
-        create_doctor_table(cursor)
-        connection.commit()
-        
-except Error as e:
-    print("Error occured MySQL", e)
-    
-finally:
-    if connection.is_connected():
-        cursor.close()
-        close_connection(connection)
-        print("MySQL connection is closed")
-        
+read_version()
+print("\n")
 
+# Q2
+def get_hospital_record(id):
+    try:
+        connection = get_connection()
+        if connection.is_connected():
+            cursor = connection.cursor()
+            select_query = """SELECT * FROM Hospital WHERE Hospital_Id = %s"""
+            cursor.execute(select_query,(id,))
+            records = cursor.fetchall()
+            
+            print("Printing Hospital record")
+            for row in records:
+                print("Hospital Id:", row[0], )
+                print("Hospital Name:", row[1])
+                print("Bed Count:", row[2])
+                
+            connection.commit()
+            close_connection(cursor,connection)
+
+    except Error as e:
+        print("Error occured MySQL", e)
+        
+def get_doctor_record(id):
+    try:
+        connection = get_connection()
+        if connection.is_connected():
+            cursor = connection.cursor()
+            select_query = """SELECT * FROM Doctor WHERE Doctor_Id = %s"""
+            cursor.execute(select_query,(id,))
+            records = cursor.fetchall()
+            
+            print("Printing Doctor record")
+            for row in records:
+                print("Doctor Id:", row[0])
+                print("Doctor Name:", row[1])
+                print("Hospital Id:", row[2])
+                print("Joining Date:", row[3])
+                print("Specialty:", row[4])
+                print("Salary:", row[5])
+                print("Experience:", row[6])
+                
+            connection.commit()
+            close_connection(cursor,connection)
+
+    except Error as e:
+        print("Error occured MySQL", e)
+
+print("Question 2: Read given hospital and doctor details \n")
+get_hospital_record(2)
+print("\n")
+get_doctor_record(105)
+print("\n")
