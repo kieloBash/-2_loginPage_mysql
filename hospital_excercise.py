@@ -104,6 +104,9 @@ print("Question 1: Print Database version")
 read_version()
 print("\n")
 
+
+
+
 # Q2
 def get_hospital_record(id):
     try:
@@ -119,6 +122,7 @@ def get_hospital_record(id):
                 print("Hospital Id:", row[0], )
                 print("Hospital Name:", row[1])
                 print("Bed Count:", row[2])
+                print('\n')
                 
             connection.commit()
             close_connection(cursor,connection)
@@ -144,6 +148,8 @@ def get_doctor_record(id):
                 print("Specialty:", row[4])
                 print("Salary:", row[5])
                 print("Experience:", row[6])
+                print('\n')
+
                 
             connection.commit()
             close_connection(cursor,connection)
@@ -156,3 +162,69 @@ get_hospital_record(2)
 print("\n")
 get_doctor_record(105)
 print("\n")
+
+
+
+
+# Q3
+def get_specialist_doctors(specialty,salary):
+    try:
+        connection = get_connection()
+        if connection.is_connected():
+            cursor = connection.cursor()
+            select_query = """SELECT * FROM Doctor WHERE Speciality = %s AND Salary > %s"""
+            cursor.execute(select_query,(specialty,salary))
+            records = cursor.fetchall()
+            print("Printing Doctor record")
+            for row in records:
+                print("Doctor Id:", row[0])
+                print("Doctor Name:", row[1])
+                print("Hospital Id:", row[2])
+                print("Joining Date:", row[3])
+                print("Specialty:", row[4])
+                print("Salary:", row[5])
+                print("Experience:", row[6])
+                print('\n')
+            connection.commit()
+            close_connection(cursor,connection)
+    except Error:
+        print(Error)   
+             
+print('Question 3: Get the list Of doctors as per the given specialty and salary')
+get_specialist_doctors("Garnacologist", 30000)
+print("\n")
+
+
+# Q4
+def get_doctors(hospital_id):
+    #Fetch All doctors within given Hospital
+    try:
+        connection = get_connection()
+        if connection.is_connected():
+            cursor = connection.cursor()
+            hospitalName_query = """SELECT Hospital_Name FROM Hospital WHERE Hospital_Id = %s"""
+            cursor.execute(hospitalName_query,(hospital_id,))
+            hospital_name = cursor.fetchone()[0]
+            
+            doctor_query = """SELECT * FROM Doctor WHERE Hospital_Id = %s"""
+            cursor.execute(doctor_query,(hospital_id,))
+            records = cursor.fetchall()
+            
+            
+            print(f"Printing Doctor record from Hospital {str(hospital_name)}")
+            for row in records:
+                print("Doctor Id:", row[0])
+                print("Doctor Name:", row[1])
+                print("Hospital Id:", row[2])
+                print("Joining Date:", row[3])
+                print("Specialty:", row[4])
+                print("Salary:", row[5])
+                print("Experience:", row[6])
+                print('\n')
+            connection.commit()
+            close_connection(cursor,connection)
+    except Error:
+        print(Error)   
+    
+print('Question 4: Get a list of doctors from a given hospital')
+get_doctors(2)
